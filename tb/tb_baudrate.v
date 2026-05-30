@@ -4,7 +4,6 @@ module tb_brg ();
     // Testbench Variables  
     parameter clk_freq = 50_000_000;
     parameter baud_rate = 115200;
-    parameter clks_per_bit = clk_freq/baud_rate;
 
     reg clk = 0;
     reg rst_n;
@@ -14,8 +13,7 @@ module tb_brg ();
     // DUT Instance
     baudrate_gen #(
         .CLK_FREQ(clk_freq),
-        .BAUD_RATE(baud_rate),
-        .CLKS_PER_BIT(clks_per_bit)
+        .BAUD_RATE(baud_rate)
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
