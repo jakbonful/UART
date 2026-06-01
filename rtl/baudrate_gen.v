@@ -1,6 +1,6 @@
 module baudrate_gen #(
     parameter CLK_FREQ = 50_000_000, // 50 MHz;
-    parameter BAUD_RATE = 115200 // 115200 changes in one second
+    parameter BAUD_RATE = 115200 // 115200 bps
 ) (
     input clk,
     input rst_n,
