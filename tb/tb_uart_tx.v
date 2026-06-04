@@ -44,6 +44,8 @@ module tb_uart_tx ();
 // Stimulus
 initial begin
     rst_n = 0;  // set reset
+    tx_start = 1'b0;
+    data_in = 8'h00;
     
     #100;
     rst_n =1; // release reset
