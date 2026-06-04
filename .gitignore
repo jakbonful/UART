@@ -1,13 +1,7 @@
 # =========================
 # ModelSim
 # =========================
-sim/modelsim/work/
-sim/modelsim/*.mpf
-sim/modelsim/*.wlf
-*.vcd
-*.mti
-*.cr.*
-transcript
+sim/modelsim
 
 # =========================
 # Vivado
