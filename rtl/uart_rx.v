@@ -5,11 +5,11 @@ module receiver (
     input rx_in,
     output reg [7:0] data_out,
     output reg rx_valid
-
 );
+
     // Module Parameters
     reg [2:0] bit_index;
-    reg [4:0] over_sample_counter;
+    reg [3:0] over_sample_counter;
 
     reg [3:0] state; // State Register
     reg [3:0] next_state;   // Next State Register
@@ -41,16 +41,14 @@ module receiver (
                     end
                 end 
                 START : begin
-                    if (!rx_in) begin
-                        if (over_sample_baud_tick) begin
-                            if (over_sample_counter == 4'd8) begin // START bit is valid at the 8th over-sample tick
-                                next_state = DATA;
-                            end else begin
-                                next_state = START;
-                            end
+                    if (over_sample_baud_tick) begin
+                        if (over_sample_counter == 4'd15) begin 
+                           next_state = DATA;
+                        end else if (over_sample_counter == 4'd8 && rx_in) begin
+                            next_state = START;
                         end
                     end else begin
-                            next_state = IDLE;
+                            next_state = START;
                     end
                 end
                 DATA : begin
@@ -63,7 +61,7 @@ module receiver (
                 STOP : begin
                    if (over_sample_baud_tick) begin
                         if (rx_in) begin
-                            if (over_sample_counter = 4'd8) begin
+                            if (over_sample_counter == 4'd8) begin
                                 next_state = IDLE;
                             end
                         end else begin
@@ -109,11 +107,11 @@ module receiver (
         // Validity Bit
         always @(posedge clk or  negedge rst_n) begin
             if (!rst_n) begin
-                rx_valid <= 0'b0;
-            end else if (state == STOP && over_sample_counter == 4'd8 && rx_in) begin
+                rx_valid <= 1'b0;
+            end else if (state == STOP && over_sample_baud_tick && over_sample_counter == 4'd8 && rx_in) begin
                 rx_valid <= 1'b1; 
             end else begin
-                rx_valid <= 0'b0;
+                rx_valid <= 1'b0;
             end
         end
 
@@ -125,4 +123,5 @@ module receiver (
                 data_out[bit_index] <= rx_in;
             end
         end
+        
 endmodule
