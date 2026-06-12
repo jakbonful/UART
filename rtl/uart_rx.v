@@ -45,7 +45,7 @@ module receiver (
                         if (over_sample_counter == 4'd15) begin 
                            next_state = DATA;
                         end else if (over_sample_counter == 4'd8 && rx_in) begin
-                            next_state = START;
+                            next_state = IDLE;
                         end
                     end else begin
                             next_state = START;
@@ -83,6 +83,8 @@ module receiver (
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
                 over_sample_counter <= 0;
+            end else if (state == IDLE) begin
+                over_sample_counter <= 0;
             end else if (over_sample_baud_tick) begin
                 if (over_sample_counter == 4'd15) begin
                     over_sample_counter <= 0;
@@ -96,7 +98,7 @@ module receiver (
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
                 bit_index <= 0;
-            end else if (state == DATA && over_sample_counter == 4'd15) begin
+            end else if (state == DATA && over_sample_baud_tick && over_sample_counter == 4'd15 && bit_index != 3'd7) begin
                 bit_index <= bit_index + 1'b1;
             end else if (state == IDLE) begin
                 bit_index <= 0;
@@ -119,7 +121,7 @@ module receiver (
         always @(posedge clk or negedge rst_n) begin
             if (!rst_n) begin
                 data_out <= 0;
-            end else if (state == DATA && over_sample_counter == 4'd8) begin
+            end else if (state == DATA && over_sample_baud_tick && over_sample_counter == 4'd8) begin
                 data_out[bit_index] <= rx_in;
             end
         end
