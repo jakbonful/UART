@@ -15,8 +15,9 @@ module transmitter (
 
     reg [3:0] state, next_state;
     reg [2:0] bit_index;
+    reg [7:0] shift_reg;
 
-    // State register
+    // state register
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             state <= IDLE;
@@ -24,49 +25,58 @@ module transmitter (
             state <= next_state;
     end
 
-    always @(posedge clk) begin
-        if (state != next_state)
-            $display("TX T=%0t state %b -> %b tx_start=%b", $time, state, next_state, tx_start);
-    end
-
-    // Next state logic
+    // next state logic
     always @(*) begin
         next_state = state;
 
         case (state)
             IDLE:  if (tx_start) next_state = START;
-
             START: if (baud_tick) next_state = DATA;
-
             DATA:  if (baud_tick && bit_index == 3'd7) next_state = STOP;
-
             STOP:  if (baud_tick) next_state = IDLE;
         endcase
     end
 
-    // Bit index logic
+    // datapath
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
+        if (!rst_n) begin
             bit_index <= 0;
-
-        else if (state == IDLE)
-            bit_index <= 0;
-
-        else if (state == DATA && baud_tick) begin
-            if (bit_index < 3'd7)
-                bit_index <= bit_index + 1'b1;
+            shift_reg <= 0;
+        end
+        else begin
+            if (state == IDLE) begin
+                bit_index <= 0;
+                if (tx_start)
+                    shift_reg <= data_in;
+            end
+            else if (state == DATA && baud_tick) begin
+                if (bit_index < 3'd7)
+                    bit_index <= bit_index + 1'b1;
+            end
         end
     end
 
-    // Output logic
+    // output
     always @(*) begin
         case (state)
             IDLE:  tx_out = 1'b1;
             START: tx_out = 1'b0;
-            DATA:  tx_out = data_in[bit_index];
+            DATA:  tx_out = shift_reg[bit_index];
             STOP:  tx_out = 1'b1;
             default: tx_out = 1'b1;
         endcase
+    end
+
+    // debug
+    // Before (fires on baud_tick posedge — state not yet updated)
+    always @(posedge baud_tick) begin
+        $display("T=%0t STATE=%b BIT=%0d TX=%b", $time, state, bit_index, tx_out);
+    end
+
+    // After (fires on clk, gated by baud_tick — state is registered and stable)
+    always @(posedge clk) begin
+        if (baud_tick)
+            $display("T=%0t STATE=%b BIT=%0d TX=%b", $time, state, bit_index, tx_out);
     end
 
 endmodule
