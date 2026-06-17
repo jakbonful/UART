@@ -1,7 +1,7 @@
 module uart_top #(
     parameter CLK_FREQ = 50_000_000,
-    parameter TX_BAUD_RATE = 115200,
-    parameter RX_OVERSAMPLE_RATE = 16 * 115200
+    parameter BAUD_RATE = 115200,
+    parameter OVERSAMPLE = 16
 ) (
     input clk,
     input rst_n,
@@ -18,7 +18,7 @@ module uart_top #(
 
     baudrate_gen #(
         .CLK_FREQ(CLK_FREQ),
-        .BAUD_RATE(TX_BAUD_RATE)
+        .BAUD_RATE(BAUD_RATE)
     ) BRG_TX (
         .clk(clk),
         .rst_n(rst_n),
@@ -27,7 +27,7 @@ module uart_top #(
 
     baudrate_gen #(
         .CLK_FREQ(CLK_FREQ),
-        .BAUD_RATE(RX_OVERSAMPLE_RATE)
+        .BAUD_RATE(OVERSAMPLE * BAUD_RATE)
     ) BRG_RX (
         .clk(clk),
         .rst_n(rst_n),
