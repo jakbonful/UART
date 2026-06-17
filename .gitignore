@@ -6,7 +6,7 @@ sim/modelsim
 # =========================
 # Vivado
 # =========================
-.Xil/
+**/.Xil/
 *.jou
 *.log
 *.pb
@@ -14,10 +14,10 @@ sim/modelsim
 *.dcp
 *.cache
 *.hw
-*.runs/
-*.sim/
-*.ip_user_files/
-*.gen/
+*.runs
+*.sim
+*.ip_user_files
+*.gen
 
 # Vivado temporary/runtime files
 *.wdf
