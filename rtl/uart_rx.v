@@ -1,12 +1,12 @@
 `timescale 1ns/1ps
 
 module receiver (
-    input  wire       clk,
-    input  wire       rst_n,
-    input  wire       over_sample_baud_tick,
-    input  wire       rx_in,
+    input   clk,
+    input   rst_n,
+    input   over_sample_baud_tick,
+    input   rx_in,
     output reg  [7:0] data_out,
-    output reg        rx_valid
+    output reg  rx_valid
 );
 
     localparam IDLE  = 4'b0001,
@@ -17,7 +17,7 @@ module receiver (
     reg [3:0] state, next_state;
     reg [3:0] over_sample_counter;
     reg [2:0] bit_index;
-    reg       rx_in_prev;
+    reg rx_in_prev;
 
     wire falling_edge  = rx_in_prev && !rx_in;
     wire sample_point  = over_sample_baud_tick && (over_sample_counter == 4'd8);
@@ -25,8 +25,10 @@ module receiver (
 
     // ── rx_in pipeline register for edge detection ───────────────
     always @(posedge clk or negedge rst_n)
-        if (!rst_n) rx_in_prev <= 1'b1;
-        else        rx_in_prev <= rx_in;
+        if (!rst_n) 
+            rx_in_prev <= 1'b1;
+        else     
+            rx_in_prev <= rx_in;
 
     // ── State register ───────────────────────────────────────────
     always @(posedge clk or negedge rst_n)
@@ -37,14 +39,18 @@ module receiver (
     always @(*) begin
         next_state = state;
         case (state)
-            IDLE:  if (falling_edge)              next_state = START;
+            IDLE:  if (falling_edge)              
+                next_state = START;
             START: begin
-                   if (sample_point && rx_in)     next_state = IDLE;   // false start
-                   else if (start_done)            next_state = DATA;
+                   if (sample_point && rx_in)     
+                        next_state = IDLE;   // false start
+                   else if (start_done)       
+                        next_state = DATA;
                    end
             DATA:  if (sample_point && bit_index == 3'd7)
-                                                   next_state = STOP;
-            STOP:  if (sample_point)               next_state = IDLE;
+                        next_state = STOP;
+            STOP:  if (sample_point)               
+                        next_state = IDLE;
             default: next_state = IDLE;
         endcase
     end
@@ -64,8 +70,7 @@ module receiver (
                 $display("T=%0t counter wrapped to 0, state=%b", $time, state);
             end else begin
                 over_sample_counter <= over_sample_counter + 1'b1;
-                $display("T=%0t counter=%0d state=%b",
-                         $time, over_sample_counter, state);
+                $display("T=%0t counter=%0d state=%b",$time, over_sample_counter, state);
             end
         end
     end
